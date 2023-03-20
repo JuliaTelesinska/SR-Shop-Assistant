@@ -45,19 +45,22 @@ class ShoppingCart:
             print(f"Your total is ${total_price}.")
 
 
-milk = Product("milk", 5, 20)
-eggs = Product("eggs", 10, 12)
-shrimp = Product("shrimp", 20, 5)
-spinach = Product("spinach", 3, 10)
-cat_food = Product("cat food", 2, 8)
-bread = Product("bread", 3, 2)
-beef = Product("beef", 9, 6)
+# milk = Product("milk", 5, 20)
+# eggs = Product("eggs", 10, 12)
+# shrimp = Product("shrimp", 20, 5)
+# spinach = Product("spinach", 3, 10)
+# cat_food = Product("cat food", 2, 8)
+# bread = Product("bread", 3, 2)
+# beef = Product("beef", 9, 6)
 
-if __name__ == "__main__":
-    print(Product.all_products)
-    cart = ShoppingCart(80)
-    cart.add_to_cart(milk, 15)
-    cart.add_to_cart(milk, 1)
-    cart.add_to_cart(eggs, 2)
-    cart.show_cart()
-    cart.calculate_budget()
+# if __name__ == "__main__":
+#     print(Product.all_products)
+#     cart = ShoppingCart(80)
+#     cart.add_to_cart(milk, 15)
+#     cart.add_to_cart(milk, 1)
+#     cart.add_to_cart(eggs, 2)
+#     cart.show_cart()
+#     print(Product.all_products)
+#     cart.calculate_budget()
+
+# Wyprintowane bo przy wywoływaniu w mainie lista artykulow jest podwojona
