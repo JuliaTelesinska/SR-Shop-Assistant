@@ -70,16 +70,14 @@ def go_shopping(my_cart):
         product = input()
         if product == "finish":
             return
-        print("Enter the amount")
-        engine.say("Enter the amount")
-        engine.runAndWait()
-        amount = input()
-        amount = int(amount) #obsluga bledu jesli amount nie da sie przekonwertowac na int
-
-
         product_added = None
         for item in Product.all_products:
             if item.name == str(product):
+                print("Enter the amount")
+                engine.say("Enter the amount")
+                engine.runAndWait()
+                amount = input()
+                amount = int(amount) #obsluga bledu jesli amount nie da sie przekonwertowac na int                
                 product_added = Product(item.name, item.price, item.amount)
                 my_cart.add_to_cart(product_added, amount)
                 break
