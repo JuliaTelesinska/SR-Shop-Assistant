@@ -34,15 +34,24 @@ class ShoppingCart:
     def show_cart(self):
         for item, amount_price in self.items_in_cart.items():
             print(f"> {amount_price[0]} * {item} = ${amount_price[1]}")
+        if not self.items_in_cart:
+            print("Your shopping cart is empty")
 
     def calculate_budget(self):
         total_price = 0
         for item, amount_price in self.items_in_cart.items():
             total_price += amount_price[1]
         if total_price > self.budget:
-            print(f"You're ${total_price-self.budget} over budget! Your total is ${total_price}.")
+            # print(f"You're ${total_price-self.budget} over budget! Your total is ${total_price}.")
+            return total_price
         else:
-            print(f"Your total is ${total_price}.")
+            # print(f"Your total is ${total_price}.")
+            return total_price
+
+    def checkout_cart(self):
+        final_checkout = self.budget - self.calculate_budget()
+        print(final_checkout)
+        # print(f"Your change is ${self.budget -final_checkout}")
 
 
 # milk = Product("milk", 5, 20)
