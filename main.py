@@ -15,7 +15,7 @@ eggs = Product("eggs", 10)
 shrimp = Product("shrimp", 20)
 spinach = Product("spinach", 3)
 cat_food = Product("cat food", 2)
-bread = Product("bread", 3)
+lollipop = Product("lollipop", 3)
 beef = Product("beef", 9)
 
 def greet():
@@ -26,18 +26,14 @@ def greet():
     print("-"*40)
 
 def set_budget():
-    # with sr.Microphone() as source:
-    #     print("Please state your budget:")
-    #     engine.say("Please state your budget.")
-    #     engine.runAndWait()
-    #     audio = r.listen(source)
-
-    # Use speech recognition to convert the user's response to text
-    try:
+    with sr.Microphone() as source:
         print("Please enter your budget:")
         engine.say("Please enter your budget:")
         engine.runAndWait()
-        budget=input()
+        audio = r.listen(source)
+    try:
+        budget = r.recognize_google(audio)
+        # budget=input()
         try:
             budget=int(budget)
             if budget <= 0:
@@ -69,36 +65,50 @@ def show_product_shelf():
     
 def go_shopping(my_cart):
     print(("-"*40))
-    # with sr.Microphone() as source:
-    #     print("Choose product you would like to buy:")
-    #     engine.say("Choose product you would like to buy")
-    #     engine.runAndWait()
-    #     audio = r.listen(source)
-    try:
-        # product = r.recognize_google(audio)
+    with sr.Microphone() as source:
         print("Choose product. If you would like to stop adding products say: 'FINISH'")
         engine.say("Choose product")
         show_product_shelf()
         engine.runAndWait()
-        product = input()
+        audio = r.listen(source)
+
+    try:
+        # product = input()
+        product = r.recognize_google(audio)
+        print(product)
         if product == "finish":
             return get_command(my_cart)
         elif product in [item.name for item in Product.all_products]:
             matched_product = next((item for item in Product.all_products if item.name == product))
-            print("Enter amount: ")
-            engine.say("Enter amount")
-            engine.runAndWait()
+            # with sr.Microphone() as source:
+            #     print("Enter amount: ")
+            #     engine.say("Enter amount")
+            #     engine.runAndWait()
+            #     audio = r.listen(source)
             try:
-                amount = int(input())
-                if amount <= 0:
-                    print("Wrong amount. Try again.")
-                    engine.say("Wrong amount. Try again.")
+                # amount = r.recognize_google(audio)
+                # print(amount)
+                print("Enter amount: ")
+                engine.say("Enter amount")
+                engine.runAndWait()               
+                amount = input()
+
+                try:
+                    amount = int(amount)
+                    if amount <= 0:
+                        print("Wrong amount. Try again.")
+                        engine.say("Wrong amount. Try again.")
+                        engine.runAndWait()
+                        return go_shopping(my_cart)
+                    my_cart.add_to_cart(matched_product, amount)
+                except ValueError:
+                    print("Amount must be a number. Try again.")
+                    engine.say("Amount must be a number. Try again.")
                     engine.runAndWait()
                     return go_shopping(my_cart)
-                my_cart.add_to_cart(matched_product, amount)
-            except ValueError:
-                print("Amount must be a number. Try again.")
-                engine.say("Amount must be a number. Try again.")
+            except sr.UnknownValueError:
+                print("Sorry, I didn't understand that. Please try again.")
+                engine.say("Sorry, I didn't understand that. Please try again.")
                 engine.runAndWait()
                 return go_shopping(my_cart)
         else:
@@ -107,11 +117,6 @@ def go_shopping(my_cart):
             engine.runAndWait()
             return go_shopping(my_cart)
             
-        # if product_added == None:
-        #     print(f"There is no {product} in the shop.")
-        #     engine.say(f"There is no {product} in the shop.")
-        #     engine.runAndWait()
-        #     return go_shopping(my_cart)
         my_cart.show_cart()
             
         return go_shopping(my_cart)
@@ -125,34 +130,61 @@ def go_shopping(my_cart):
 def remove_from_cart(my_cart):
     try:
         if bool(my_cart.items_in_cart):
-            print("Choose item to remove from cart. Say 'exit' if you want to finish removing.")
-            engine.say("Choose item to remove from cart")
-            engine.runAndWait()
-            my_cart.show_cart()
-            product = input()
-            if product == "exit":
-                return get_command(my_cart)
-            elif product in [item.name for item in Product.all_products]:
-                matched_product = next((item for item in Product.all_products if item.name == product))
-                print("Enter amount:")
-                engine.say("Enter amount")
-                engine.runAndWait()
-                try:
-                    amount =int(input())
-                    my_cart.remove_item(matched_product, amount)
-                    my_cart.show_cart()
-                    remove_from_cart(my_cart)
-                except ValueError:
-                    print("Amount must be a number. Try again.")
-                    engine.say("Amount must be a number. Try again.")
+            with sr.Microphone() as source:
+                print("Choose item to remove from cart. Say 'exit' if you want to finish removing.")
+                engine.say("Choose item to remove from cart")
+                my_cart.show_cart()
+                audio = r.listen(source)
+
+            try:
+            # product = input()
+                product = r.recognize_google(audio)
+                print(product)
+                if product == "exit":
+                    return get_command(my_cart)
+                elif product in [item.name for item in Product.all_products]:
+                    matched_product = next((item for item in Product.all_products if item.name == product))
+                    # with sr.Microphone() as source:
+                    #     print("Enter amount:")
+                    #     engine.say("Enter amount")
+                    #     engine.runAndWait()
+                    #     audio = r.listen(source)
+                    try:
+                        print("Enter amount:")
+                        engine.say("Enter amount")
+                        engine.runAndWait()
+                        amount = input()
+                        # amount = r.recognize_google(audio)
+
+                        try:
+                            amount =int(amount)
+                            print(amount)
+                            my_cart.remove_item(matched_product, amount)
+                            my_cart.show_cart()
+                            remove_from_cart(my_cart)
+                        except:
+                            print("Amount must be a number. Try again.")
+                            engine.say("Amount must be a number. Try again.")
+                            engine.runAndWait()
+                            return remove_from_cart(my_cart)
+                    except sr.UnknownValueError:
+                        print("Sorry, I didn't understand that. Please try again.")
+                        engine.say("Sorry, I didn't understand that. Please try again.")
+                        engine.runAndWait()
+                        return remove_from_cart(my_cart)
+
+                else:
+                    print(f"There is no {product} in your cart. Try again.")
+                    engine.say(f"There is no {product} in your cart. Try again.")
                     engine.runAndWait()
                     return remove_from_cart(my_cart)
-            else:
-                print(f"There is no {product} in your cart. Try again.")
-                engine.say(f"There is no {product} in your cart. Try again.")
-                engine.runAndWait()
                 
+            except sr.UnknownValueError:
+                print("Sorry, I didn't understand that. Please try again.")
+                engine.say("Sorry, I didn't understand that. Please try again.")
+                engine.runAndWait()
                 return remove_from_cart(my_cart)
+    
         else:
             print("Your cart is empty. Nothing to remove.")
             engine.say("Your cart is empty. Nothing to remove.")
@@ -165,7 +197,7 @@ def remove_from_cart(my_cart):
         return remove_from_cart(my_cart)  
 
 def get_command(my_cart):
-    try:
+    with sr.Microphone() as source:
         print("""
 -----------------------------------------------------------------
 | If you would like to check your current balance say 'BUDGET'. |
@@ -178,7 +210,12 @@ def get_command(my_cart):
     """)
         engine.say("Choose command: budget, add, shelf, delete, show cart or finish")
         engine.runAndWait()
-        command = input()
+        audio = r.listen(source)            
+    try:
+        command = r.recognize_google(audio)
+        command = command.lower()
+        print(command)
+        # command = input()
         if command == "budget":
             my_cart.inform_on_total(my_cart.calculate_total())
             return get_command(my_cart)
