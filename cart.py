@@ -29,6 +29,20 @@ class ShoppingCart:
             new_amount = current_amount + amount
             new_total_price = current_total_price + item.price * amount
             self.items_in_cart[item.name] = (new_amount, new_total_price)
+          
+    def remove_item(self, item: Product, amount: int):
+        if item.name in self.items_in_cart:
+            current_amount, current_total_price = self.items_in_cart[item.name]
+            if amount > current_amount:
+                amount = current_amount
+            if amount == current_amount:
+                self.items_in_cart.pop(item.name)
+            else:
+                new_amount = current_amount - amount
+                new_total_price = current_total_price - item.price * amount
+                self.items_in_cart[item.name] = (new_amount, new_total_price)
+        else:
+            print(f"There is no {item.name} in your cart.")
     
     def show_cart(self):
         for item, amount_price in self.items_in_cart.items():
