@@ -77,7 +77,7 @@ def go_shopping(my_cart):
     try:
         # product = r.recognize_google(audio)
         print("Choose product. If you would like to stop adding products say: 'FINISH'")
-        engine.say("Choose product. If you would like to stop adding products say: finish")
+        engine.say("Choose product")
         show_product_shelf()
         engine.runAndWait()
         product = input()
@@ -86,6 +86,8 @@ def go_shopping(my_cart):
         elif product in [item.name for item in Product.all_products]:
             matched_product = next((item for item in Product.all_products if item.name == product))
             print("Enter amount: ")
+            engine.say("Enter amount")
+            engine.runAndWait()
             try:
                 amount = int(input())
                 if amount <= 0:
@@ -121,9 +123,46 @@ def go_shopping(my_cart):
         return go_shopping(my_cart)  
 
 def remove_from_cart(my_cart):
-    print("Which item to remove from cart:")
-    engine.say("Which item to remove from cart:")
-    my_cart.show_cart()
+    try:
+        if bool(my_cart.items_in_cart):
+            print("Choose item to remove from cart. Say 'exit' if you want to finish removing.")
+            engine.say("Choose item to remove from cart")
+            engine.runAndWait()
+            my_cart.show_cart()
+            product = input()
+            if product == "exit":
+                return get_command(my_cart)
+            elif product in [item.name for item in Product.all_products]:
+                matched_product = next((item for item in Product.all_products if item.name == product))
+                print("Enter amount:")
+                engine.say("Enter amount")
+                engine.runAndWait()
+                try:
+                    amount =int(input())
+                    my_cart.remove_item(matched_product, amount)
+                    my_cart.show_cart()
+                    remove_from_cart(my_cart)
+                except ValueError:
+                    print("Amount must be a number. Try again.")
+                    engine.say("Amount must be a number. Try again.")
+                    engine.runAndWait()
+                    return remove_from_cart(my_cart)
+            else:
+                print(f"There is no {product} in your cart. Try again.")
+                engine.say(f"There is no {product} in your cart. Try again.")
+                engine.runAndWait()
+                
+                return remove_from_cart(my_cart)
+        else:
+            print("Your cart is empty. Nothing to remove.")
+            engine.say("Your cart is empty. Nothing to remove.")
+            return get_command(my_cart)
+        
+    except sr.UnknownValueError:
+        print("Sorry, I didn't understand that. Please try again.")
+        engine.say("Sorry, I didn't understand that. Please try again.")
+        engine.runAndWait()
+        return remove_from_cart(my_cart)  
 
 def get_command(my_cart):
     try:
@@ -137,7 +176,7 @@ def get_command(my_cart):
 | To finish all your shopping say 'FINISH'.                     |
 -----------------------------------------------------------------
     """)
-        engine.say("Choose command: budget, add, delete, show cart or finish")
+        engine.say("Choose command: budget, add, shelf, delete, show cart or finish")
         engine.runAndWait()
         command = input()
         if command == "budget":
@@ -152,7 +191,7 @@ def get_command(my_cart):
             my_cart.show_cart()
             return get_command(my_cart)
         elif command =="delete":
-            pass
+            remove_from_cart(my_cart)
         elif command =="finish":
             return checkout(my_cart)
         else:
@@ -170,7 +209,11 @@ def checkout(my_cart):
         print(f"You can't afford your groceries. Your budget was exceeded by ${abs(my_cart.checkout_cart())}.")
         engine.say(f"You can't afford your groceries. Your budget was exceeded by ${abs(my_cart.checkout_cart())}.")
         engine.runAndWait()
-        #TODO ADD REMOVAL HERE
+        print("You should remove some products from your cart")
+        engine.say("You should remove some products from your cart")
+        engine.runAndWait()
+        while my_cart.checkout_cart()<0:
+            remove_from_cart(my_cart)
     else: 
         print(f"Your total is: ${my_cart.calculate_total()}. You receive ${my_cart.checkout_cart()} in change. Thank you for shopping with us.")
         engine.say(f"Your total is: ${my_cart.calculate_total()}. You receive ${my_cart.checkout_cart()} in change. Thank you for shopping with us.")
@@ -183,5 +226,3 @@ if __name__ == "__main__":
         cart = set_budget()
         get_command(cart)
         break
-    #TO DO - dodac remove artykulow, w przypadku przekroczenia kwoty pod koniec zakupow wyswietlanie karty i wzkazanie produktow do usuniecia,
-    #ale tez zeby mozna bylo usunac podczas zakupow
