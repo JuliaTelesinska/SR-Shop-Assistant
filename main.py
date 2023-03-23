@@ -10,17 +10,17 @@ engine.setProperty('voice', voices[1].id)
 
 r = sr.Recognizer()
 
-milk = Product("milk", 5, 20)
-eggs = Product("eggs", 10, 12)
-shrimp = Product("shrimp", 20, 5)
-spinach = Product("spinach", 3, 10)
-cat_food = Product("cat food", 2, 8)
-bread = Product("bread", 3, 2)
-beef = Product("beef", 9, 6)
+milk = Product("milk", 5)
+eggs = Product("eggs", 10)
+shrimp = Product("shrimp", 20)
+spinach = Product("spinach", 3)
+cat_food = Product("cat food", 2)
+bread = Product("bread", 3)
+beef = Product("beef", 9)
 
 def greet():
     print("Welcome to the SR-Shop-Assistant.")
-    engine.say("Welcome to the Ladybug Shop")
+    engine.say("Welcome to the SR-Shop-Assistant.")
     engine.runAndWait()
     print(f"Currently there are {len(Product.all_products)} different items in stock.")
     print("-"*40)
@@ -68,8 +68,6 @@ def show_product_shelf():
         print(f"{product.name.capitalize()}, price: ${product.price}")
     
 def go_shopping(my_cart):
-    print("Products avalaible in shop:")
-    print(Product.all_products)
     print(("-"*40))
     # with sr.Microphone() as source:
     #     print("Choose product you would like to buy:")
@@ -85,23 +83,33 @@ def go_shopping(my_cart):
         product = input()
         if product == "finish":
             return get_command(my_cart)
-        product_added = None
-        for item in Product.all_products:
-            if item.name == product:
-                print("Enter the amount")
-                engine.say("Enter the amount")
+        elif product in [item.name for item in Product.all_products]:
+            matched_product = next((item for item in Product.all_products if item.name == product))
+            print("Enter amount: ")
+            try:
+                amount = int(input())
+                if amount <= 0:
+                    print("Wrong amount. Try again.")
+                    engine.say("Wrong amount. Try again.")
+                    engine.runAndWait()
+                    return go_shopping(my_cart)
+                my_cart.add_to_cart(matched_product, amount)
+            except ValueError:
+                print("Amount must be a number. Try again.")
+                engine.say("Amount must be a number. Try again.")
                 engine.runAndWait()
-                amount = input()
-                amount = int(amount) #obsluga bledu jesli amount nie da sie przekonwertowac na int                
-                product_added = Product(item.name, item.price, item.amount)
-                my_cart.add_to_cart(product_added, amount)
-                break
-            
-        if product_added == None:
+                return go_shopping(my_cart)
+        else:
             print(f"There is no {product} in the shop.")
             engine.say(f"There is no {product} in the shop.")
             engine.runAndWait()
             return go_shopping(my_cart)
+            
+        # if product_added == None:
+        #     print(f"There is no {product} in the shop.")
+        #     engine.say(f"There is no {product} in the shop.")
+        #     engine.runAndWait()
+        #     return go_shopping(my_cart)
         my_cart.show_cart()
             
         return go_shopping(my_cart)
@@ -123,6 +131,7 @@ def get_command(my_cart):
 -----------------------------------------------------------------
 | If you would like to check your current balance say 'BUDGET'. |
 | If you want to add a product say 'ADD'.                       |
+| To see all available products say 'SHELF'                     |
 | If you want to delete a product from cart say 'DELETE'.       |
 | To check your cart say 'SHOW CART'.                           |
 | To finish all your shopping say 'FINISH'.                     |
@@ -132,11 +141,13 @@ def get_command(my_cart):
         engine.runAndWait()
         command = input()
         if command == "budget":
-            print(f"Your budget is: ${my_cart.budget}")
-            engine.say(f"Your budget is: ${my_cart.budget}")
+            my_cart.inform_on_total(my_cart.calculate_total())
             return get_command(my_cart)
         elif command =="add":
             return go_shopping(my_cart)
+        elif command =="shelf":
+            show_product_shelf()
+            return get_command(my_cart)
         elif command =="show cart":
             my_cart.show_cart()
             return get_command(my_cart)
@@ -147,7 +158,7 @@ def get_command(my_cart):
         else:
             print("Command not recognized")
             engine.say("Command not recognized")
-            return get_command()
+            return get_command(my_cart)
     except sr.UnknownValueError:
         print("Sorry, I didn't understand that. Please try again.")
         engine.say("Sorry, I didn't understand that. Please try again.")
@@ -155,9 +166,15 @@ def get_command(my_cart):
         return get_command(my_cart)  
 
 def checkout(my_cart):
-    print(f"Your total is: ${my_cart.checkout_cart()}. Thank you for shopping with us.")
-    engine.say(f"Your total is: ${my_cart.checkout_cart()}. Thank you for shopping with us.")
-    engine.runAndWait()
+    if my_cart.checkout_cart()<0:
+        print(f"You can't afford your groceries. Your budget was exceeded by ${abs(my_cart.checkout_cart())}.")
+        engine.say(f"You can't afford your groceries. Your budget was exceeded by ${abs(my_cart.checkout_cart())}.")
+        engine.runAndWait()
+        #TODO ADD REMOVAL HERE
+    else: 
+        print(f"Your total is: ${my_cart.calculate_total()}. You receive ${my_cart.checkout_cart()} in change. Thank you for shopping with us.")
+        engine.say(f"Your total is: ${my_cart.calculate_total()}. You receive ${my_cart.checkout_cart()} in change. Thank you for shopping with us.")
+        engine.runAndWait()
     return
 
 if __name__ == "__main__":

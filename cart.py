@@ -1,16 +1,17 @@
 class Product:
     all_products = []
 
-    def __init__(self, name: str, price: int, amount: int):
+    def __init__(self, name: str, price: int):
         self.name = name
         self.price = price
-        self.amount = amount
+        for product in Product.all_products:
+            if product.name == name:
+                return
         Product.all_products.append(self)
     
     def __str__(self):
         return f"Product name: {self.name},\
-            \nProduct price: ${self.price},\
-            \nAmount available: {self.amount}."
+            \nProduct price: ${self.price}"
     
     def __repr__(self):
         return self.name
@@ -20,8 +21,6 @@ class ShoppingCart:
         self.budget = budget
         self.items_in_cart = {}
     
-    #TODO take amount declared inside Product class into account
-    # when adding product to cart
     def add_to_cart(self, item: Product, amount: int):
         if item.name not in self.items_in_cart:
             self.items_in_cart[item.name] = (amount, amount*item.price)
@@ -37,21 +36,21 @@ class ShoppingCart:
         if not self.items_in_cart:
             print("Your shopping cart is empty")
 
-    def calculate_budget(self):
+    def calculate_total(self):
         total_price = 0
         for item, amount_price in self.items_in_cart.items():
             total_price += amount_price[1]
+        return total_price
+    
+    def inform_on_total(self, total_price):
         if total_price > self.budget:
-            # print(f"You're ${total_price-self.budget} over budget! Your total is ${total_price}.")
-            return total_price
+            print(f"You're ${total_price-self.budget} over the original budget of {self.budget}! Your current total is ${total_price}.")
         else:
-            # print(f"Your total is ${total_price}.")
-            return total_price
+            print(f"Your budget is ${self.budget}. Your current total is ${total_price}.")
 
     def checkout_cart(self):
-        final_checkout = self.budget - self.calculate_budget()
-        print(final_checkout)
-        # print(f"Your change is ${self.budget -final_checkout}")
+        final_checkout = self.budget - self.calculate_total()
+        return final_checkout
 
 
 # milk = Product("milk", 5, 20)
