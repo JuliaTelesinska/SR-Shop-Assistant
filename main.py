@@ -1,6 +1,5 @@
 import speech_recognition as sr
 import pyttsx3
-import sys
 from cart import Product, ShoppingCart
 
 # setting up the voice assistant
@@ -33,13 +32,11 @@ def set_budget():
         audio = r.listen(source)
     try:
         budget = r.recognize_google(audio)
-        # budget=input()
         try:
             budget=int(budget)
             if budget <= 0:
                 print("Specified budget doesn't allow for spending.")
                 return set_budget()
-            # budget = int(r.recognize_google(audio))
         except:
             print("The budget must be a number!")
             print("-"*40)
@@ -88,8 +85,8 @@ def go_shopping(my_cart):
             try:
                 # amount = r.recognize_google(audio)
                 # print(amount)
-                print("Enter amount: ")
-                engine.say("Enter amount")
+                print("Enter amount in the console: ")
+                engine.say("Enter amount in the console")
                 engine.runAndWait()               
                 amount = input()
 
@@ -138,23 +135,18 @@ def remove_from_cart(my_cart):
 
             try:
             # product = input()
-                product = r.recognize_google(audio)
+                product = r.recognize_google(audio,7)
                 print(product)
                 if product == "exit":
                     return get_command(my_cart)
                 elif product in [item.name for item in Product.all_products]:
                     matched_product = next((item for item in Product.all_products if item.name == product))
-                    # with sr.Microphone() as source:
-                    #     print("Enter amount:")
-                    #     engine.say("Enter amount")
-                    #     engine.runAndWait()
-                    #     audio = r.listen(source)
                     try:
                         print("Enter amount:")
                         engine.say("Enter amount")
                         engine.runAndWait()
-                        amount = input()
-                        # amount = r.recognize_google(audio)
+                        amount = r.listen(source,3)
+                        amount = r.recognize_google(audio)
 
                         try:
                             amount =int(amount)
@@ -201,14 +193,14 @@ def get_command(my_cart):
         print("""
 -----------------------------------------------------------------
 | If you would like to check your current balance say 'BUDGET'. |
-| If you want to add a product say 'ADD'.                       |
+| If you want to add a product say 'APPEND'.                    |
 | To see all available products say 'SHELF'                     |
 | If you want to delete a product from cart say 'DELETE'.       |
 | To check your cart say 'SHOW CART'.                           |
 | To finish all your shopping say 'FINISH'.                     |
 -----------------------------------------------------------------
     """)
-        engine.say("Choose command: budget, add, shelf, delete, show cart or finish")
+        engine.say("Choose command: budget, append, shelf, delete, show cart or finish")
         engine.runAndWait()
         audio = r.listen(source)            
     try:
@@ -219,7 +211,7 @@ def get_command(my_cart):
         if command == "budget":
             my_cart.inform_on_total(my_cart.calculate_total())
             return get_command(my_cart)
-        elif command =="add":
+        elif command =="append":
             return go_shopping(my_cart)
         elif command =="shelf":
             show_product_shelf()
