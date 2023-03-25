@@ -5,7 +5,7 @@ from cart import Product, ShoppingCart
 # setting up the voice assistant
 engine = pyttsx3.init()
 voices = engine.getProperty('voices')
-engine.setProperty('voice', voices[1].id)
+engine.setProperty('voice', voices[0].id)
 
 r = sr.Recognizer()
 
@@ -67,7 +67,7 @@ def go_shopping(my_cart):
         engine.say("Choose product")
         show_product_shelf()
         engine.runAndWait()
-        audio = r.listen(source)
+        audio = r.listen(source, 7,5)
 
     try:
         # product = input()
@@ -83,8 +83,6 @@ def go_shopping(my_cart):
             #     engine.runAndWait()
             #     audio = r.listen(source)
             try:
-                # amount = r.recognize_google(audio)
-                # print(amount)
                 print("Enter amount in the console: ")
                 engine.say("Enter amount in the console")
                 engine.runAndWait()               
@@ -107,6 +105,9 @@ def go_shopping(my_cart):
                 print("Sorry, I didn't understand that. Please try again.")
                 engine.say("Sorry, I didn't understand that. Please try again.")
                 engine.runAndWait()
+                return go_shopping(my_cart)
+            except sr.WaitTimeoutError:
+                print("Timed out")
                 return go_shopping(my_cart)
         else:
             print(f"There is no {product} in the shop.")
@@ -131,22 +132,21 @@ def remove_from_cart(my_cart):
                 print("Choose item to remove from cart. Say 'exit' if you want to finish removing.")
                 engine.say("Choose item to remove from cart")
                 my_cart.show_cart()
-                audio = r.listen(source)
+                audio = r.listen(source,7,5)
 
             try:
             # product = input()
-                product = r.recognize_google(audio,7)
+                product = r.recognize_google(audio)
                 print(product)
                 if product == "exit":
                     return get_command(my_cart)
                 elif product in [item.name for item in Product.all_products]:
                     matched_product = next((item for item in Product.all_products if item.name == product))
                     try:
-                        print("Enter amount:")
-                        engine.say("Enter amount")
+                        print("Enter amount in console:")
+                        engine.say("Enter amount in console")
                         engine.runAndWait()
-                        amount = r.listen(source,3)
-                        amount = r.recognize_google(audio)
+                        amount = input()
 
                         try:
                             amount =int(amount)
@@ -176,6 +176,10 @@ def remove_from_cart(my_cart):
                 engine.say("Sorry, I didn't understand that. Please try again.")
                 engine.runAndWait()
                 return remove_from_cart(my_cart)
+
+            except sr.WaitTimeoutError:
+                print("Timed out.")
+                return remove_from_cart(my_cart)  
     
         else:
             print("Your cart is empty. Nothing to remove.")
@@ -186,6 +190,10 @@ def remove_from_cart(my_cart):
         print("Sorry, I didn't understand that. Please try again.")
         engine.say("Sorry, I didn't understand that. Please try again.")
         engine.runAndWait()
+        return remove_from_cart(my_cart)
+
+    except sr.WaitTimeoutError:
+        print("Timed out.")
         return remove_from_cart(my_cart)  
 
 def get_command(my_cart):
@@ -202,7 +210,7 @@ def get_command(my_cart):
     """)
         engine.say("Choose command: budget, append, shelf, delete, show cart or finish")
         engine.runAndWait()
-        audio = r.listen(source)            
+        audio = r.listen(source,5,5)            
     try:
         command = r.recognize_google(audio)
         command = command.lower()
