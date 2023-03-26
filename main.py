@@ -16,6 +16,7 @@ spinach = Product("spinach", 3)
 cat_food = Product("cat food", 2)
 lollipop = Product("lollipop", 3)
 beef = Product("beef", 9)
+apple = Product("beef", 3)
 
 def greet():
     print("Welcome to the SR-Shop-Assistant.")
@@ -29,7 +30,7 @@ def set_budget():
         print("Please enter your budget:")
         engine.say("Please enter your budget:")
         engine.runAndWait()
-        audio = r.listen(source)
+        audio = r.listen(source,7,5)
     try:
         budget = r.recognize_google(audio)
         try:
@@ -64,10 +65,10 @@ def go_shopping(my_cart):
     print(("-"*40))
     with sr.Microphone() as source:
         print("Choose product. If you would like to stop adding products say: 'FINISH'")
-        engine.say("Choose product")
         show_product_shelf()
+        engine.say("Choose product")
         engine.runAndWait()
-        audio = r.listen(source)
+        audio = r.listen(source, 7,5)
 
     try:
         # product = input()
@@ -83,8 +84,6 @@ def go_shopping(my_cart):
             #     engine.runAndWait()
             #     audio = r.listen(source)
             try:
-                # amount = r.recognize_google(audio)
-                # print(amount)
                 print("Enter amount in the console: ")
                 engine.say("Enter amount in the console")
                 engine.runAndWait()               
@@ -108,6 +107,9 @@ def go_shopping(my_cart):
                 engine.say("Sorry, I didn't understand that. Please try again.")
                 engine.runAndWait()
                 return go_shopping(my_cart)
+            except sr.WaitTimeoutError:
+                print("Timed out")
+                return go_shopping(my_cart)
         else:
             print(f"There is no {product} in the shop.")
             engine.say(f"There is no {product} in the shop.")
@@ -130,23 +132,23 @@ def remove_from_cart(my_cart):
             with sr.Microphone() as source:
                 print("Choose item to remove from cart. Say 'exit' if you want to finish removing.")
                 engine.say("Choose item to remove from cart")
+                engine.runAndWait()
                 my_cart.show_cart()
-                audio = r.listen(source)
+                audio_product = r.listen(source,7,5)
 
             try:
             # product = input()
-                product = r.recognize_google(audio,7)
+                product = r.recognize_google(audio_product)
                 print(product)
                 if product == "exit":
                     return get_command(my_cart)
                 elif product in [item.name for item in Product.all_products]:
                     matched_product = next((item for item in Product.all_products if item.name == product))
                     try:
-                        print("Enter amount:")
-                        engine.say("Enter amount")
+                        engine.say("Enter amount in console")
                         engine.runAndWait()
-                        amount = r.listen(source,3)
-                        amount = r.recognize_google(audio)
+                        print("Enter amount in console:")
+                        amount = input()
 
                         try:
                             amount =int(amount)
@@ -176,16 +178,25 @@ def remove_from_cart(my_cart):
                 engine.say("Sorry, I didn't understand that. Please try again.")
                 engine.runAndWait()
                 return remove_from_cart(my_cart)
+
+            except sr.WaitTimeoutError:
+                print("Timed out.")
+                return remove_from_cart(my_cart)  
     
         else:
             print("Your cart is empty. Nothing to remove.")
             engine.say("Your cart is empty. Nothing to remove.")
+            engine.runAndWait()
             return get_command(my_cart)
         
     except sr.UnknownValueError:
         print("Sorry, I didn't understand that. Please try again.")
         engine.say("Sorry, I didn't understand that. Please try again.")
         engine.runAndWait()
+        return remove_from_cart(my_cart)
+
+    except sr.WaitTimeoutError:
+        print("Timed out.")
         return remove_from_cart(my_cart)  
 
 def get_command(my_cart):
@@ -202,7 +213,7 @@ def get_command(my_cart):
     """)
         engine.say("Choose command: budget, append, shelf, delete, show cart or finish")
         engine.runAndWait()
-        audio = r.listen(source)            
+        audio = r.listen(source,5,5)            
     try:
         command = r.recognize_google(audio)
         command = command.lower()
@@ -226,6 +237,7 @@ def get_command(my_cart):
         else:
             print("Command not recognized")
             engine.say("Command not recognized")
+            engine.runAndWait()
             return get_command(my_cart)
     except sr.UnknownValueError:
         print("Sorry, I didn't understand that. Please try again.")
