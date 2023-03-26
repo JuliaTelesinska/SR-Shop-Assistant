@@ -5,7 +5,7 @@ from cart import Product, ShoppingCart
 # setting up the voice assistant
 engine = pyttsx3.init()
 voices = engine.getProperty('voices')
-engine.setProperty('voice', voices[0].id)
+engine.setProperty('voice', voices[1].id)
 
 r = sr.Recognizer()
 
@@ -16,6 +16,7 @@ spinach = Product("spinach", 3)
 cat_food = Product("cat food", 2)
 lollipop = Product("lollipop", 3)
 beef = Product("beef", 9)
+apple = Product("beef", 3)
 
 def greet():
     print("Welcome to the SR-Shop-Assistant.")
@@ -29,7 +30,7 @@ def set_budget():
         print("Please enter your budget:")
         engine.say("Please enter your budget:")
         engine.runAndWait()
-        audio = r.listen(source)
+        audio = r.listen(source,7,5)
     try:
         budget = r.recognize_google(audio)
         try:
@@ -64,8 +65,8 @@ def go_shopping(my_cart):
     print(("-"*40))
     with sr.Microphone() as source:
         print("Choose product. If you would like to stop adding products say: 'FINISH'")
-        engine.say("Choose product")
         show_product_shelf()
+        engine.say("Choose product")
         engine.runAndWait()
         audio = r.listen(source, 7,5)
 
@@ -131,21 +132,22 @@ def remove_from_cart(my_cart):
             with sr.Microphone() as source:
                 print("Choose item to remove from cart. Say 'exit' if you want to finish removing.")
                 engine.say("Choose item to remove from cart")
+                engine.runAndWait()
                 my_cart.show_cart()
-                audio = r.listen(source,7,5)
+                audio_product = r.listen(source,7,5)
 
             try:
             # product = input()
-                product = r.recognize_google(audio)
+                product = r.recognize_google(audio_product)
                 print(product)
                 if product == "exit":
                     return get_command(my_cart)
                 elif product in [item.name for item in Product.all_products]:
                     matched_product = next((item for item in Product.all_products if item.name == product))
                     try:
-                        print("Enter amount in console:")
                         engine.say("Enter amount in console")
                         engine.runAndWait()
+                        print("Enter amount in console:")
                         amount = input()
 
                         try:
@@ -184,6 +186,7 @@ def remove_from_cart(my_cart):
         else:
             print("Your cart is empty. Nothing to remove.")
             engine.say("Your cart is empty. Nothing to remove.")
+            engine.runAndWait()
             return get_command(my_cart)
         
     except sr.UnknownValueError:
@@ -234,6 +237,7 @@ def get_command(my_cart):
         else:
             print("Command not recognized")
             engine.say("Command not recognized")
+            engine.runAndWait()
             return get_command(my_cart)
     except sr.UnknownValueError:
         print("Sorry, I didn't understand that. Please try again.")
